@@ -24,8 +24,12 @@ reports. There is no delete, no disable, no licence removal, and therefore no
   price table you control), and sums the monthly and yearly waste.
 - Inspects each of those accounts' OneDrive: whether a drive exists, how much is
   stored, and whether the account's manager holds a permission on the drive root.
-  A disabled account with an active drive and no manager access is reported as
-  **orphaned**.
+  Each account receives one `OneDriveStatus`: **Orphaned** (active drive, no
+  manager access), **Delegated** (manager has access), **NotProvisioned** (no
+  drive exists) or **NotAccessible** (the auditing account was refused access, so
+  the drive could not be checked). Drives that could not be read are counted
+  apart and the report carries a visible warning; they are never presented as
+  "not orphaned".
 - Writes a timestamped HTML report and CSV export, and prints a headline summary
   to the console.
 
@@ -173,15 +177,18 @@ folders.
 
 - **`Reports/WasteReport-<timestamp>.html`**: a self-contained report (inline
   CSS, single file, no external dependencies). A summary band at the top shows the
-  monthly waste, yearly waste, number of disabled licensed accounts, and number of
-  orphaned OneDrive drives. Below it, a per-user table lists the account, its
+  monthly waste, yearly waste, number of disabled licensed accounts, number of
+  orphaned OneDrive drives and number of drives not accessible. When that last
+  figure is above zero, a warning box above the cards states that the OneDrive
+  audit is incomplete and how to grant access. Below it, a per-user table lists the account, its
   licences, monthly and yearly cost, OneDrive usage, OneDrive access status,
   manager, and notes. This is the file to present to management.
 
 - **`Reports/WasteReport-<timestamp>.csv`**: the raw per-user detail:
   `DisplayName`, `UserPrincipalName`, `AccountEnabled`, `Licenses`,
   `MonthlyCostEur`, `YearlyCostEur`, `OneDriveActive`, `OneDriveUsedGB`,
-  `OneDriveOrphaned`, `Manager`, `Notes`. Use it for filtering, pivoting, or
+  `OneDriveStatus` (Orphaned, Delegated, NotProvisioned or NotAccessible),
+  `Manager`, `Notes`. Use it for filtering, pivoting, or
   importing elsewhere.
 
 - **`Reports/InactiveEnabled-<timestamp>.csv`**: only when
@@ -203,20 +210,26 @@ delegated `Files.Read.All`, a Global Administrator has no access to another user
 OneDrive unless they are a site collection administrator of that personal site. In
 that situation the audit logs a warning, writes "OneDrive check failed: Access
 denied" in the Notes column, reports the drive as inactive and does not count it as
-orphaned. The orphaned-drive counter therefore under-reports in any tenant where the
-signed-in administrator has not been granted access to the users' OneDrives, which
-is the default state of a tenant. To obtain the OneDrive columns, grant the auditing
-account access to the drives first (Microsoft 365 admin center, user page, OneDrive
-tab, "Get access to files", or the SharePoint admin tools), then run the audit. The
-audit does not support application-only permissions as shipped.
+orphaned. That was version 1.0.1. Since version 1.0.2 the case is reported explicitly
+instead of being silently counted as "not orphaned": the account gets the status
+`NotAccessible`, a dedicated "Drives not accessible" counter appears next to the
+orphaned counter, and a warning box at the top of the report (and in the console)
+states that the OneDrive audit is incomplete, how many accounts are affected and how
+to grant access. The orphaned counter only ever counts drives that were actually
+read. Expect this situation on a first run: it is the default state of a tenant. To
+complete the OneDrive part, grant the auditing account access to the drives
+(Microsoft 365 admin center, user page, OneDrive tab, "Get access to files", or the
+SharePoint admin tools), then run the audit again. The audit does not support
+application-only permissions as shipped.
 
 **The manager-access comparison has not been validated live.** Because of the point
 above, the check that decides whether the manager's UPN or mail appears in the drive
 root permissions has only been exercised with synthetic permission data. Real-world
 permission shapes vary (direct grants, sharing links, sharing invitations). Check the
 OneDrive column against a known case before relying on it for a decision. The
-euro/licence figures are computed from directory data alone and are not subject to
-this caveat.
+`NotAccessible` status, on the other hand, was validated live: the affected account
+was reported with that status, the counter and the warning. The euro/licence
+figures are computed from directory data alone and are not subject to this caveat.
 
 **Accounts without a provisioned OneDrive are handled correctly.** This path was
 validated live: Graph returns "User's mysite not found", the account is listed for

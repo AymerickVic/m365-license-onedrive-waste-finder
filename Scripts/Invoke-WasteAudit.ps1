@@ -21,10 +21,15 @@
            price table in Config.ps1, and sums the monthly waste.
         4. For each of those accounts, inspects the OneDrive: whether a drive
            exists, how much is stored, and whether the account's manager has a
-           permission on the drive root. A disabled account whose drive is
-           still active with no manager access is reported as "orphaned" -
-           data that will silently vanish when the licence is finally removed,
-           with nobody able to reach it.
+           permission on the drive root. Every account gets exactly one
+           OneDriveStatus: Orphaned (active drive, no manager access - data
+           that will silently vanish when the licence is finally removed, with
+           nobody able to reach it), Delegated (manager has access),
+           NotProvisioned (no drive exists) or NotAccessible (the auditing
+           account was refused access, so the drive could not be checked).
+           NotAccessible drives are counted separately and the report carries
+           a visible warning: a drive that could not be read is never
+           presented as "not orphaned".
         5. Writes an HTML report (for management) and a CSV export (for raw
            analysis), both timestamped, under the configured Reports folder.
         6. Prints a headline summary to the console.
@@ -190,10 +195,21 @@ try {
         }
 
         # --- OneDrive: existence, quota, and manager access -----------------
+        # Every account ends with exactly one OneDriveStatus:
+        #   Orphaned        drive read and active, and the manager holds no
+        #                   permission on its root (or no manager is assigned).
+        #   Delegated       drive read, and the manager holds a permission on
+        #                   its root.
+        #   NotProvisioned  Graph reports no drive for this account (never
+        #                   provisioned, or no SharePoint/OneDrive plan).
+        #   NotAccessible   the drive, or its permissions, could not be read:
+        #                   access denied, or any failure not recognised below.
+        # The default is NotAccessible so that no code path can silently fall
+        # through to "not orphaned" when nothing was actually read.
         $driveActive = $false
         $usedGB = 0.0
-        $orphaned = $false
-        $notes = ''
+        $driveStatus = 'NotAccessible'
+        $notes = 'OneDrive check did not complete.'
 
         try {
             $drive = Get-MgUserDefaultDrive -UserId $user.Id -ErrorAction Stop
@@ -208,6 +224,7 @@ try {
                 # a permission grantee can take (user, link, sharing invitation),
                 # test whether the manager's UPN or mail appears anywhere in it.
                 $managerHasAccess = $false
+                $permissionsRead = $true
                 if ($managerUpn -or $managerMail) {
                     $needles = @($managerUpn, $managerMail | Where-Object { $_ }) | ForEach-Object { $_.ToLowerInvariant() }
                     try {
@@ -221,42 +238,69 @@ try {
                         }
                     }
                     catch {
+                        $permissionsRead = $false
                         $notes = "Could not read drive permissions: $($_.Exception.Message)"
                         Write-AuditLog "Permission read failed for $($user.UserPrincipalName): $($_.Exception.Message)" 'WARN'
                     }
                 }
 
-                # Orphaned = active drive on a disabled account with no manager
-                # access (either no manager at all, or the manager holds no
-                # permission on the root).
-                if (-not $managerHasAccess) {
-                    $orphaned = $true
+                if (-not $permissionsRead) {
+                    # The drive exists but its permissions are unreadable, so we
+                    # cannot tell whether it is orphaned. Report it as such rather
+                    # than guessing either way.
+                    $driveStatus = 'NotAccessible'
+                }
+                elseif ($managerHasAccess) {
+                    $driveStatus = 'Delegated'
+                    $notes = ''
+                }
+                else {
+                    # Orphaned = active drive on a disabled account with no manager
+                    # access (either no manager at all, or the manager holds no
+                    # permission on the root).
+                    $driveStatus = 'Orphaned'
                     $notes = if (-not ($managerUpn -or $managerMail)) {
                         'Orphaned: no manager assigned and drive still active.'
                     }
-                    elseif (-not $notes) {
-                        'Orphaned: manager has no permission on the drive root.'
-                    }
                     else {
-                        $notes
+                        'Orphaned: manager has no permission on the drive root.'
                     }
                 }
             }
+            else {
+                # Graph answered without a drive id: nothing was checked.
+                $notes = 'Drive lookup returned no drive id.'
+                Write-AuditLog "Drive lookup returned no drive id for $($user.UserPrincipalName)." 'WARN'
+            }
         }
         catch {
-            # A 404 here means the user never provisioned OneDrive - normal,
-            # not a failure. Anything else is logged but does not stop the scan.
-            if ($_.Exception.Message -match '404|not\s*found|resourceNotFound') {
+            $message = $_.Exception.Message
+            if ($message -match '404|not\s*found|resourceNotFound') {
+                # The user never provisioned OneDrive - normal, not a failure.
+                $driveStatus = 'NotProvisioned'
                 $notes = 'No OneDrive provisioned for this account.'
                 Write-AuditLog "No OneDrive for $($user.UserPrincipalName)." 'INFO'
             }
-            elseif ($_.Exception.Message -match 'SPO license|SharePoint') {
-                $notes = 'Tenant/account has no SharePoint or OneDrive licence - no drive to audit.'
+            elseif ($message -match 'SPO license|SharePoint|notAllowed|valid license') {
+                # Includes Graph's "[notAllowed] ... you do not have a valid
+                # license" answer for accounts without a SharePoint/OneDrive plan.
+                $driveStatus = 'NotProvisioned'
+                $notes = 'Account has no SharePoint or OneDrive licence - no drive to audit.'
                 Write-AuditLog "No SharePoint/OneDrive licence for $($user.UserPrincipalName) - drive not audited." 'INFO'
             }
+            elseif ($message -match 'accessDenied|access\s*denied|403|forbidden|unauthori[sz]ed') {
+                # The auditing account has no access to this user's OneDrive
+                # (typically: delegated Files.Read.All on a drive where the
+                # signed-in admin is not site collection administrator).
+                $driveStatus = 'NotAccessible'
+                $notes = 'OneDrive not accessible to the auditing account (access denied).'
+                Write-AuditLog "OneDrive not accessible for $($user.UserPrincipalName): $message" 'WARN'
+            }
             else {
-                $notes = "OneDrive check failed: $($_.Exception.Message)"
-                Write-AuditLog "OneDrive check failed for $($user.UserPrincipalName): $($_.Exception.Message)" 'WARN'
+                # Unrecognised failure: never assume the drive is fine.
+                $driveStatus = 'NotAccessible'
+                $notes = "OneDrive check failed: $message"
+                Write-AuditLog "OneDrive check failed for $($user.UserPrincipalName): $message" 'WARN'
             }
         }
 
@@ -269,7 +313,7 @@ try {
                 YearlyCostEur     = [math]::Round($monthlyCost * 12, 2)
                 OneDriveActive    = $driveActive
                 OneDriveUsedGB    = $usedGB
-                OneDriveOrphaned  = $orphaned
+                OneDriveStatus    = $driveStatus
                 Manager           = if ($managerDisplay) { "$managerDisplay <$managerUpn>" } elseif ($managerUpn) { $managerUpn } else { '' }
                 Notes             = $notes
             })
@@ -309,15 +353,20 @@ try {
     # -----------------------------------------------------------------------
     $totalMonthly = [math]::Round((($records | Measure-Object -Property MonthlyCostEur -Sum).Sum), 2)
     if (-not $totalMonthly) { $totalMonthly = 0.0 }
-    $orphanCount = @($records | Where-Object { $_.OneDriveOrphaned }).Count
+    # Only drives that were actually read and found without manager access count
+    # as orphaned. Drives the auditing account could not read are counted apart
+    # and surfaced as a warning: they may be orphaned, nobody knows yet.
+    $orphanCount        = @($records | Where-Object { $_.OneDriveStatus -eq 'Orphaned' }).Count
+    $notAccessibleCount = @($records | Where-Object { $_.OneDriveStatus -eq 'NotAccessible' }).Count
 
     $summary = @{
-        MonthlyWasteEur    = $totalMonthly
-        YearlyWasteEur     = [math]::Round($totalMonthly * 12, 2)
-        AccountCount       = $records.Count
-        OrphanedDriveCount = $orphanCount
-        TenantId           = $context.TenantId
-        GeneratedOn        = (Get-Date -Format 'yyyy-MM-dd HH:mm')
+        MonthlyWasteEur         = $totalMonthly
+        YearlyWasteEur          = [math]::Round($totalMonthly * 12, 2)
+        AccountCount            = $records.Count
+        OrphanedDriveCount      = $orphanCount
+        NotAccessibleDriveCount = $notAccessibleCount
+        TenantId                = $context.TenantId
+        GeneratedOn             = (Get-Date -Format 'yyyy-MM-dd HH:mm')
     }
 
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
@@ -345,11 +394,25 @@ try {
     Write-Host ("   Wasted per month           : {0}" -f [string]::Format($fr, '{0:N2} EUR', $summary.MonthlyWasteEur)) -ForegroundColor Yellow
     Write-Host ("   Wasted per year            : {0}" -f [string]::Format($fr, '{0:N2} EUR', $summary.YearlyWasteEur)) -ForegroundColor Yellow
     Write-Host ("   Orphaned OneDrive drives   : {0}" -f $summary.OrphanedDriveCount)
+    $notAccessibleColour = if ($summary.NotAccessibleDriveCount -gt 0) { 'Yellow' } else { 'Gray' }
+    Write-Host ("   Drives not accessible      : {0}" -f $summary.NotAccessibleDriveCount) -ForegroundColor $notAccessibleColour
     Write-Host '  =============================================' -ForegroundColor Cyan
     Write-Host ("   HTML report : {0}" -f $htmlPath)
     Write-Host ("   CSV export  : {0}" -f $csvPath)
     Write-Host ("   Log file    : {0}" -f $logFile)
     Write-Host ''
+
+    if ($summary.NotAccessibleDriveCount -gt 0) {
+        # Never let a low orphaned count pass for a clean tenant when part of
+        # the OneDrive audit could not run.
+        Write-Host '  WARNING: OneDrive audit incomplete.' -ForegroundColor Yellow
+        Write-Host ("   {0} of {1} disabled licensed account(s) have a OneDrive the auditing account could not read." -f $summary.NotAccessibleDriveCount, $summary.AccountCount) -ForegroundColor Yellow
+        Write-Host '   They may be orphaned and are NOT counted in the orphaned figure above.' -ForegroundColor Yellow
+        Write-Host '   Grant the auditing account access to each affected OneDrive (Microsoft 365 admin center >' -ForegroundColor Yellow
+        Write-Host '   Users > Active users > the user > OneDrive > "Get access to files"), then run the audit again.' -ForegroundColor Yellow
+        Write-Host ''
+        Write-AuditLog "OneDrive audit incomplete: $($summary.NotAccessibleDriveCount) drive(s) not accessible to the auditing account." 'WARN'
+    }
 
     Write-AuditLog 'Audit complete.' 'SUCCESS'
 }

@@ -318,7 +318,9 @@ function New-HtmlWasteReport {
     .PARAMETER Summary
         A hashtable with the headline totals:
         MonthlyWasteEur, YearlyWasteEur, AccountCount, OrphanedDriveCount,
-        TenantId, GeneratedOn.
+        NotAccessibleDriveCount, TenantId, GeneratedOn.
+        When NotAccessibleDriveCount is above zero, a warning box is rendered at
+        the top of the report stating that the OneDrive audit is incomplete.
     .PARAMETER Path
         Full path of the HTML file to write.
     #>
@@ -351,24 +353,33 @@ function New-HtmlWasteReport {
 
     $rowsHtml = [System.Text.StringBuilder]::new()
     foreach ($r in $Records) {
-        # An orphaned OneDrive is the headline risk, so its row is tinted.
-        $rowClass = if ($r.OneDriveOrphaned) { ' class="orphan"' } else { '' }
+        $status = [string]$r.OneDriveStatus
+
+        # An orphaned OneDrive is the headline risk, so its row is tinted red.
+        # A drive the audit could not read is tinted amber so it is never
+        # mistaken for a clean result.
+        $rowClass = switch ($status) {
+            'Orphaned'      { ' class="orphan"' }
+            'NotAccessible' { ' class="inaccessible"' }
+            default         { '' }
+        }
 
         $driveCell = if ($r.OneDriveActive) {
             "$([string]::Format($fr, '{0:N2}', $r.OneDriveUsedGB)) GB"
+        }
+        elseif ($status -eq 'NotAccessible') {
+            '<span class="muted">unknown</span>'
         }
         else {
             '<span class="muted">no OneDrive</span>'
         }
 
-        $orphanBadge = if ($r.OneDriveOrphaned) {
-            '<span class="badge badge-risk">orphaned - no manager access</span>'
-        }
-        elseif ($r.OneDriveActive) {
-            '<span class="badge badge-ok">manager has access</span>'
-        }
-        else {
-            '<span class="muted">-</span>'
+        $orphanBadge = switch ($status) {
+            'Orphaned'       { '<span class="badge badge-risk">orphaned - no manager access</span>' }
+            'Delegated'      { '<span class="badge badge-ok">manager has access</span>' }
+            'NotAccessible'  { '<span class="badge badge-warn">not accessible</span>' }
+            'NotProvisioned' { '<span class="muted">-</span>' }
+            default          { "<span class=""badge badge-warn"">$(Protect-Html $status)</span>" }
         }
 
         [void]$rowsHtml.Append("<tr$rowClass>")
@@ -390,6 +401,27 @@ function New-HtmlWasteReport {
     $generatedOn = Protect-Html $Summary.GeneratedOn
     $tenant      = Protect-Html $Summary.TenantId
 
+    # Warning box, only when part of the OneDrive audit could not run. The
+    # reader must never take a low orphaned count for a clean tenant when the
+    # auditing account was refused access to some drives.
+    $notAccessible = [int]$Summary.NotAccessibleDriveCount
+    $alertHtml = ''
+    if ($notAccessible -gt 0) {
+        $alertHtml = @"
+    <div class="alert" role="alert">
+        <strong>OneDrive audit incomplete: $notAccessible of $([int]$Summary.AccountCount) disabled licensed account(s) could not be checked.</strong>
+        The auditing account was refused access to these accounts' OneDrive (access denied), so it could not
+        tell whether the drives are orphaned. They are listed below as &quot;not accessible&quot; and are
+        <em>not</em> included in the orphaned figure. Do not read a low orphaned count as a clean tenant while
+        this warning is present.<br>
+        To complete the audit, grant the auditing account access to each affected OneDrive, then run the audit
+        again: in the Microsoft 365 admin center open <em>Users &gt; Active users</em>, select the user, open the
+        <em>OneDrive</em> tab and choose <em>Get access to files</em>; or add the auditing account as site
+        collection administrator of the OneDrive with the SharePoint admin tools.
+    </div>
+"@
+    }
+
     $html = @"
 <!DOCTYPE html>
 <html lang="en">
@@ -404,14 +436,19 @@ function New-HtmlWasteReport {
     .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }
     header h1 { margin: 0 0 4px; font-size: 24px; }
     header .sub { color: #6b7280; font-size: 13px; }
-    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 28px 0 8px; }
+    .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin: 28px 0 8px; }
     .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px;
             box-shadow: 0 1px 2px rgba(0,0,0,.04); }
     .card .label { color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
     .card .value { font-size: 26px; font-weight: 700; margin-top: 6px; }
     .card.accent .value { color: #b91c1c; }
     .card.warn   .value { color: #b45309; }
-    @media (max-width: 820px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 980px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 640px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    .alert { margin: 24px 0 0; padding: 14px 18px; background: #fffbeb; color: #78350f;
+             border: 1px solid #f59e0b; border-left-width: 6px; border-radius: 8px;
+             font-size: 14px; line-height: 1.55; }
+    .alert strong { display: block; font-size: 15px; margin-bottom: 6px; color: #92400e; }
     table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 24px;
             border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; font-size: 13px; }
     thead th { text-align: left; background: #1f2937; color: #f9fafb; padding: 11px 12px;
@@ -420,11 +457,14 @@ function New-HtmlWasteReport {
     tbody tr:hover { background: #fafbfc; }
     tr.orphan { background: #fef2f2; }
     tr.orphan:hover { background: #fee2e2; }
+    tr.inaccessible { background: #fffbeb; }
+    tr.inaccessible:hover { background: #fef3c7; }
     td.num, th.num { text-align: right; white-space: nowrap; }
     .muted { color: #9099a3; font-size: 12px; }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .badge-risk { background: #fee2e2; color: #b91c1c; }
     .badge-ok   { background: #dcfce7; color: #15803d; }
+    .badge-warn { background: #fef3c7; color: #b45309; }
     footer { margin-top: 28px; color: #9099a3; font-size: 12px; line-height: 1.5; }
 </style>
 </head>
@@ -434,7 +474,7 @@ function New-HtmlWasteReport {
         <h1>Microsoft 365 Licence &amp; OneDrive Waste Report</h1>
         <div class="sub">Read-only audit &middot; Tenant $tenant &middot; Generated $generatedOn</div>
     </header>
-
+$alertHtml
     <section class="cards">
         <div class="card accent">
             <div class="label">Wasted per month</div>
@@ -451,6 +491,10 @@ function New-HtmlWasteReport {
         <div class="card warn">
             <div class="label">Orphaned OneDrive drives</div>
             <div class="value">$($Summary.OrphanedDriveCount)</div>
+        </div>
+        <div class="card$(if ($notAccessible -gt 0) { ' warn' })">
+            <div class="label">Drives not accessible</div>
+            <div class="value">$notAccessible</div>
         </div>
     </section>
 
@@ -475,8 +519,9 @@ $($rowsHtml.ToString())
     <footer>
         Euro figures use the indicative prices in Config.ps1 and must be adjusted to your
         contracted rates. &quot;Orphaned&quot; means the disabled account still owns an active
-        OneDrive whose root has no permission granted to the account's manager. This report is
-        read-only: no account, licence or drive was modified.
+        OneDrive whose root has no permission granted to the account's manager. &quot;Not accessible&quot;
+        means the auditing account could not read the drive; such drives are excluded from the orphaned
+        count. This report is read-only: no account, licence or drive was modified.
     </footer>
 </div>
 </body>
