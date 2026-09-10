@@ -1,10 +1,14 @@
 # License & OneDrive Waste Finder
 
 A **read-only** Microsoft 365 audit for PowerShell. It puts a euro figure on the
-licences you are still paying for on **disabled accounts**, and flags **orphaned
-OneDrive drives**: drives that still belong to a disabled account and to which
-no manager has been granted access. It produces a clean **HTML report** you can
-show to management and a detailed **CSV** for your own analysis.
+licences you are still paying for on **disabled accounts**, and reports the state
+of each of those accounts' **OneDrive**: orphaned (still active, no manager
+access), delegated to the manager, not provisioned, or not accessible to the
+administrator running the audit. The licence figures work on any tenant. The
+OneDrive inspection depends on that administrator's access to each drive, and the
+report says so explicitly whenever it could not look (see
+[Known limitations](#known-limitations)). It produces a clean **HTML report** you
+can show to management and a detailed **CSV** for your own analysis.
 
 The tool never changes anything in your tenant. It only reads, calculates, and
 reports. There is no delete, no disable, no licence removal, and therefore no

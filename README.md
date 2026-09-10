@@ -1,6 +1,6 @@
 # M365 License and OneDrive Waste Finder
 
-A read-only PowerShell audit for Microsoft 365 that puts a euro figure on the licences still assigned to disabled accounts, and flags orphaned OneDrive drives that nobody can reach any more. Microsoft Graph SDK only, no deprecated modules, no on-premises Active Directory.
+A read-only PowerShell audit for Microsoft 365 that puts a euro figure on the licences still assigned to disabled accounts, and reports the state of each of those accounts' OneDrive: orphaned, delegated to the manager, not provisioned, or not accessible to the administrator running the audit. The licence figures work on any tenant. The OneDrive inspection depends on the access that administrator holds on each drive, and the report says so explicitly whenever it could not look (see [Known limitations](#known-limitations)). Microsoft Graph SDK only, no deprecated modules, no on-premises Active Directory.
 
 ![Example HTML report: summary cards showing wasted cost per month and per year, the number of disabled licensed accounts and orphaned OneDrive drives, followed by a per-account table with licences, cost, OneDrive usage, access status, manager and notes](Docs/example-report.png)
 
@@ -192,7 +192,7 @@ PSScriptAnalyzerSettings.psd1   Lint settings used during development
 
 ## Automating the rest of the offboarding
 
-This audit tells you what is being wasted. It deliberately changes nothing. A separate, paid pack automates the seven steps of a complete user departure: account disabling, licence and group removal, MFA method revocation, Intune device retirement, OneDrive delegation to the manager, mailbox conversion to shared, and an orchestrator that runs them in order. Details at https://edensys.blink.store/m365-license-onedrive-waste-finder?checkout=github-waste-finder.
+This audit tells you what is being wasted. It deliberately changes nothing. A separate, paid pack automates the seven steps of a complete user departure: account disabling, licence and group removal, MFA method revocation, Intune device retirement, OneDrive delegation to the manager, mailbox conversion to shared, and an orchestrator that runs them in order. Details at https://edensys.blink.store/offboarding-automation-pack?checkout=github-offboarding-pack.
 
 ## License
 
