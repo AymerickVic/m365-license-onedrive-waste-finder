@@ -2,7 +2,7 @@
 
 A **read-only** Microsoft 365 audit for PowerShell. It puts a euro figure on the
 licences you are still paying for on **disabled accounts**, and flags **orphaned
-OneDrive drives** — drives that still belong to a disabled account and to which
+OneDrive drives**: drives that still belong to a disabled account and to which
 no manager has been granted access. It produces a clean **HTML report** you can
 show to management and a detailed **CSV** for your own analysis.
 
@@ -92,21 +92,21 @@ the problem entirely.
    Install these in one sitting so they land on the same version.
 
 2. **Configure `Config/Config.ps1`.** This is the only file you need to edit.
-   Everything the audit uses is defined here — nothing is hard-coded elsewhere.
+   Everything the audit uses is defined here. Nothing is hard-coded elsewhere.
 
-   - `TenantId` / `ClientId` — leave both **empty** to sign in interactively with
+   - `TenantId` / `ClientId`: leave both **empty** to sign in interactively with
      the built-in Microsoft Graph PowerShell application (recommended for an audit
      you run by hand). Fill them in only if you registered a dedicated application
      (see [GraphPermissions.md](GraphPermissions.md)).
-   - `GraphScopes` — the read-only delegated scopes to request. Leave as shipped
+   - `GraphScopes`: the read-only delegated scopes to request. Leave as shipped
      unless you remove the optional inactivity feature (see below).
-   - `LicensePriceTable` — **customise this before your first real run.** The
+   - `LicensePriceTable`: **customise this before your first real run.** The
      shipped figures are indicative public list prices. Replace each one with your
      own contracted monthly unit price (EA / CSP / promotional). A SKU that is not
      in the table is priced at 0 EUR and reported with a warning, so the audit
-     never crashes on an unknown licence — it simply tells you which price to add.
-   - `InactivityThresholdDays` — used only by `-IncludeInactiveEnabled` (default 90).
-   - `ReportPath` / `LogPath` — where reports and logs are written. Both folders are
+     never crashes on an unknown licence. It simply tells you which price to add.
+   - `InactivityThresholdDays`: used only by `-IncludeInactiveEnabled` (default 90).
+   - `ReportPath` / `LogPath`: where reports and logs are written. Both folders are
      created automatically at run time.
 
 ---
@@ -116,8 +116,8 @@ the problem entirely.
 The easiest way to run the audit is the launcher, which handles the working
 directory, the execution policy, and the module check for you:
 
-- **Windows** — double-click **`Run-Audit.cmd`**.
-- **macOS / Linux** — `pwsh ./Run-Audit.ps1`
+- **Windows**: double-click **`Run-Audit.cmd`**.
+- **macOS / Linux**: `pwsh ./Run-Audit.ps1`
 
 See [QUICKSTART.md](QUICKSTART.md) for the five-step walkthrough.
 
@@ -133,7 +133,7 @@ carries the required scopes.
 
 ### Parameters
 
-- **`-TenantId <tenant>`** — sign in to a specific tenant, e.g.
+- **`-TenantId <tenant>`**: sign in to a specific tenant, e.g.
   `contoso.onmicrosoft.com` or the tenant GUID. This overrides `Config.TenantId`.
   Use it when the account you authenticate with can access more than one tenant,
   or is a personal Microsoft account that administers an organisation tenant, so
@@ -143,19 +143,19 @@ carries the required scopes.
   ./Scripts/Invoke-WasteAudit.ps1 -TenantId "contoso.onmicrosoft.com"
   ```
 
-- **`-IncludeInactiveEnabled`** — additionally lists accounts that are still
+- **`-IncludeInactiveEnabled`**: additionally lists accounts that are still
   **enabled** but whose last interactive sign-in is older than
   `InactivityThresholdDays`. These are informational only and are **not** added to
   the disabled-account waste total. This feature reads `signInActivity`, which
   requires the `AuditLog.Read.All` scope **and an Entra ID P1 licence on the
-  tenant** — without P1, Microsoft does not expose last-sign-in data. If the data
+  tenant**. Without P1, Microsoft does not expose last-sign-in data. If the data
   is unavailable, the audit logs a warning and continues.
 
   ```powershell
   ./Scripts/Invoke-WasteAudit.ps1 -IncludeInactiveEnabled
   ```
 
-- **`-UseDeviceCode`** — sign in with the device-code flow (a short code and a URL,
+- **`-UseDeviceCode`**: sign in with the device-code flow (a short code and a URL,
   `https://microsoft.com/devicelogin`, that you open in any browser) instead of the
   Windows account broker. Use it when Windows keeps selecting the wrong account or
   forces a passkey you cannot complete.
@@ -171,42 +171,58 @@ carries the required scopes.
 All outputs are timestamped and written to the configured `Reports` and `Logs`
 folders.
 
-- **`Reports/WasteReport-<timestamp>.html`** — a self-contained report (inline
+- **`Reports/WasteReport-<timestamp>.html`**: a self-contained report (inline
   CSS, single file, no external dependencies). A summary band at the top shows the
   monthly waste, yearly waste, number of disabled licensed accounts, and number of
   orphaned OneDrive drives. Below it, a per-user table lists the account, its
   licences, monthly and yearly cost, OneDrive usage, OneDrive access status,
   manager, and notes. This is the file to present to management.
 
-- **`Reports/WasteReport-<timestamp>.csv`** — the raw per-user detail:
+- **`Reports/WasteReport-<timestamp>.csv`**: the raw per-user detail:
   `DisplayName`, `UserPrincipalName`, `AccountEnabled`, `Licenses`,
   `MonthlyCostEur`, `YearlyCostEur`, `OneDriveActive`, `OneDriveUsedGB`,
   `OneDriveOrphaned`, `Manager`, `Notes`. Use it for filtering, pivoting, or
   importing elsewhere.
 
-- **`Reports/InactiveEnabled-<timestamp>.csv`** — only when
+- **`Reports/InactiveEnabled-<timestamp>.csv`**: only when
   `-IncludeInactiveEnabled` is used and matches are found.
 
-- **`Logs/WasteAudit-<timestamp>.log`** — a full run log (the same INFO / WARN /
+- **`Logs/WasteAudit-<timestamp>.log`**: a full run log (the same INFO / WARN /
   ERROR / SUCCESS lines shown on the console).
 
 ---
 
 ## Known limitations
 
-**OneDrive orphaned-access detection.** The logic that decides whether a disabled
-account's OneDrive is "orphaned" — an active drive whose root carries no
-permission for the account's manager — has been validated in testing. Because the
-range of real-world OneDrive permission shapes (direct user grants, sharing
-links, sharing invitations) is broad, and because tenants differ in how OneDrive
-is provisioned and licensed, we recommend the standard best practice for any
-Microsoft Graph integration: **run the audit first against a test tenant, or
-during off-peak hours on production, and sanity-check the OneDrive column before
-relying on it for a decision.** The euro/licence figures are computed from
-directory data alone and are not subject to this caveat.
+**OneDrive inspection depends on the administrator's own access to each drive.**
+This was tested live on a lab tenant with a Microsoft 365 Business Premium licence:
+a disabled, licensed account with a provisioned OneDrive and a manager holding no
+permission on it. The licence waste was reported correctly (SPB, 22 EUR per month).
+The drive read, however, was answered by Microsoft Graph with `accessDenied`: with
+delegated `Files.Read.All`, a Global Administrator has no access to another user's
+OneDrive unless they are a site collection administrator of that personal site. In
+that situation the audit logs a warning, writes "OneDrive check failed: Access
+denied" in the Notes column, reports the drive as inactive and does not count it as
+orphaned. The orphaned-drive counter therefore under-reports in any tenant where the
+signed-in administrator has not been granted access to the users' OneDrives, which
+is the default state of a tenant. To obtain the OneDrive columns, grant the auditing
+account access to the drives first (Microsoft 365 admin center, user page, OneDrive
+tab, "Get access to files", or the SharePoint admin tools), then run the audit. The
+audit does not support application-only permissions as shipped.
 
-This is a normal precaution, not a sign of a defect — it is exactly how a careful
-administrator introduces any new reporting tool into a production environment.
+**The manager-access comparison has not been validated live.** Because of the point
+above, the check that decides whether the manager's UPN or mail appears in the drive
+root permissions has only been exercised with synthetic permission data. Real-world
+permission shapes vary (direct grants, sharing links, sharing invitations). Check the
+OneDrive column against a known case before relying on it for a decision. The
+euro/licence figures are computed from directory data alone and are not subject to
+this caveat.
+
+**Accounts without a provisioned OneDrive are handled correctly.** This path was
+validated live: Graph returns "User's mysite not found", the account is listed for
+its licence cost with the note "No OneDrive provisioned for this account." and is not
+counted as an orphaned drive. Verified on accounts holding a Business Premium licence
+that never signed in, and on accounts holding only an Entra ID P2 licence.
 
 **Prices are indicative until you set them.** The shipped `LicensePriceTable`
 holds public list prices as a starting point. The euro totals are only as
@@ -216,13 +232,13 @@ figure to management. See [FAQ.md](FAQ.md).
 **Group-based licence assignment.** The audit counts licences that appear as
 assigned to the account, exactly as the directory reports them. It does not
 distinguish, in the euro total, between directly assigned and group-inherited
-licences — both represent a paid seat on a disabled account.
+licences. Both represent a paid seat on a disabled account.
 
 ---
 
 ## Support files
 
-- [GraphPermissions.md](GraphPermissions.md) — the Graph scopes, why each is
+- [GraphPermissions.md](GraphPermissions.md): the Graph scopes, why each is
   needed, and how to set up and consent to them.
-- [FAQ.md](FAQ.md) — common questions and error resolution.
-- [LICENSE](../LICENSE) — MIT licence.
+- [FAQ.md](FAQ.md): common questions and error resolution.
+- [LICENSE](../LICENSE): MIT licence.

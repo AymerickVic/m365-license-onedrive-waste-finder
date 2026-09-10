@@ -31,7 +31,7 @@ it found installed.
 
 The licence's `SkuPartNumber` is not in your price table. When the audit meets a
 SKU that is not listed in `Config.LicensePriceTable`, it prices it at **0 EUR** and
-logs a warning naming the SKU — for example:
+logs a warning naming the SKU, for example:
 
 ```
 No price configured for SKU 'AAD_PREMIUM_P2' - counted as 0 EUR.
@@ -48,8 +48,8 @@ totals.
 
 Yes, before you quote a figure to anyone. The shipped `LicensePriceTable` contains
 **public list prices** as a convenient starting point. Your actual cost depends on
-your agreement — Enterprise Agreement, CSP, promotional pricing, currency, and
-term — and is often different. The euro totals in the report are only as accurate
+your agreement (Enterprise Agreement, CSP, promotional pricing, currency, and
+term) and is often different. The euro totals in the report are only as accurate
 as the numbers you enter. Replace each value with your own contracted monthly unit
 price before relying on the output.
 
@@ -72,19 +72,19 @@ audit records the note "No OneDrive provisioned for this account." at INFO
 level in the log. The account still appears in the report for its **licence**
 cost; it is just not counted as an orphaned drive, because there is no drive to
 be orphaned. The same handling applies account by account across an entire
-tenant that has no OneDrive/SharePoint licence at all — the audit notes each
+tenant that has no OneDrive/SharePoint licence at all: the audit notes each
 account and continues without stopping.
 
 ---
 
 ### What is the difference between a "wasted" licence and an "inactive" account?
 
-- **Wasted licence** — the audit's core purpose. An account is **disabled**
+- **Wasted licence**: the audit's core purpose. An account is **disabled**
   (`accountEnabled = false`) but still has one or more licences assigned. Nobody
   can sign in to it, yet you are still paying for the seats. These are always
   reported and are counted in the euro totals.
 
-- **Inactive account** — an optional extra, enabled with `-IncludeInactiveEnabled`.
+- **Inactive account**: an optional extra, enabled with `-IncludeInactiveEnabled`.
   These accounts are still **enabled** but have not signed in for longer than
   `InactivityThresholdDays` (default 90). They are shown for information only and
   are **not** added to the waste total, because an enabled account may be a
@@ -100,15 +100,15 @@ account and continues without stopping.
 The scopes the audit uses read directory-wide data and require administrator
 consent. Common cases:
 
-- **"Need admin approval" / consent prompt blocked** — an administrator has not
+- **"Need admin approval" / consent prompt blocked**: an administrator has not
   consented to the scopes. Have an administrator grant consent (see
   [GraphPermissions.md](GraphPermissions.md) > Granting admin consent).
 - **"Insufficient privileges" / authorization error while reading users or SKUs**
-  — the signed-in account lacks a required scope, or consent covered only some
+  : the signed-in account lacks a required scope, or consent covered only some
   scopes. Reconnect and ensure all of `User.Read.All`, `Organization.Read.All` and
   `Files.Read.All` are consented. The audit reconnects automatically when the
   current session is missing a scope.
-- **You signed in with a personal Microsoft account** — a personal account has no
+- **You signed in with a personal Microsoft account**: a personal account has no
   organisation directory to audit. Re-run with `-TenantId <your-tenant>` (for
   example `contoso.onmicrosoft.com`) and choose your work/school administrator
   account at the sign-in prompt. The audit stops with a clear message if it detects
@@ -143,7 +143,7 @@ complete. Two fixes:
 
 No. It is read-only. It requests only read scopes, and it calls only `Get-*` and
 `Connect-MgGraph` cmdlets. It cannot disable, delete, or re-license an account,
-and it never reads the content of files in OneDrive — only drive quota and
+and it never reads the content of files in OneDrive, only drive quota and
 permissions. See [GraphPermissions.md](GraphPermissions.md).
 
 ---

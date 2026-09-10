@@ -23,9 +23,9 @@ Every scope below is a `*.Read.*` scope. The audit performs no write of any kind
 `Files.Read.All` is a broad-sounding scope, so it is worth being precise about how
 the audit uses it. The audit calls only:
 
-- `Get-MgUserDefaultDrive` — to confirm a OneDrive exists and read its **quota**
+- `Get-MgUserDefaultDrive`: to confirm a OneDrive exists and read its **quota**
   (used bytes).
-- `Get-MgDriveRootPermission` — to read the list of **permissions** on the drive's
+- `Get-MgDriveRootPermission`: to read the list of **permissions** on the drive's
   root, so it can tell whether the account's manager has access.
 
 The audit **never** calls any file-content API. It does not enumerate, open,
@@ -36,7 +36,7 @@ script.
 
 ---
 
-## Option A — Interactive sign-in (recommended, no setup)
+## Option A: Interactive sign-in (recommended, no setup)
 
 This is how the audit is designed to be run and how it was validated. Leave
 `TenantId` and `ClientId` empty in `Config/Config.ps1`. When you run the audit,
@@ -52,13 +52,13 @@ This is the right choice for an audit an administrator runs by hand.
 
 ---
 
-## Option B — Dedicated app registration (optional)
+## Option B: Dedicated app registration (optional)
 
 Register a dedicated application when you want a fixed `ClientId` (for example, to
 run the audit under a specific app identity, or to standardise consent across a
 managed fleet). The scopes are the same delegated, read-only scopes.
 
-### Step 1 — Create the app registration
+### Step 1: Create the app registration
 
 1. Sign in to the **Microsoft Entra admin center** at
    `https://entra.microsoft.com` as an administrator.
@@ -71,21 +71,21 @@ managed fleet). The scopes are the same delegated, read-only scopes.
    (mobile & desktop)** and enter `http://localhost`.
 7. Select **Register**.
 
-### Step 2 — Record the identifiers
+### Step 2: Record the identifiers
 
 On the app's **Overview** page, copy:
 
-- **Application (client) ID** — put this in `Config.ClientId`.
-- **Directory (tenant) ID** — put this in `Config.TenantId`.
+- **Application (client) ID**: put this in `Config.ClientId`.
+- **Directory (tenant) ID**: put this in `Config.TenantId`.
 
-### Step 3 — Enable public client flows
+### Step 3: Enable public client flows
 
 1. In the app, go to **Authentication**.
 2. Under **Advanced settings** > **Allow public client flows**, set the toggle to
    **Yes** (this enables interactive/device-code sign-in without a client secret).
 3. Select **Save**.
 
-### Step 4 — Add the delegated API permissions
+### Step 4: Add the delegated API permissions
 
 1. In the app, go to **API permissions**.
 2. Select **Add a permission** > **Microsoft Graph** > **Delegated permissions**.
@@ -96,7 +96,7 @@ On the app's **Overview** page, copy:
    - `AuditLog.Read.All` (only if you use `-IncludeInactiveEnabled`)
 4. Select **Add permissions**.
 
-### Step 5 — Grant admin consent
+### Step 5: Grant admin consent
 
 See below.
 

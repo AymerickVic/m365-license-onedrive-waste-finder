@@ -165,10 +165,10 @@ function Connect-AuditGraph {
         Connect to Microsoft Graph with read-only scopes, reusing any
         existing session when it already carries the scopes we need.
     .DESCRIPTION
-        Mirrors the connection pattern of the offboarding pack: if a Graph
-        session is already open and it already holds every requested scope,
-        it is reused untouched. Otherwise a new interactive sign-in is
-        started. TenantId and ClientId are passed through only when supplied.
+        If a Graph session is already open and it already holds every
+        requested scope, it is reused untouched. Otherwise a new interactive
+        sign-in is started. TenantId and ClientId are passed through only
+        when supplied.
     .PARAMETER Scopes
         The delegated scopes to request (typically $Config.GraphScopes).
     .PARAMETER TenantId

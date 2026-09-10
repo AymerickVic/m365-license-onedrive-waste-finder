@@ -1,13 +1,18 @@
 # Quick Start
 
-From the downloaded zip to your first report in five steps. For full detail, see
+From a fresh clone to your first report in five steps. For full detail, see
 [README.md](README.md).
 
 ---
 
-## 1. Unzip
+## 1. Get the code
 
-Extract the archive anywhere. You get a folder named `License-OneDrive-Waste-Finder`.
+Clone the repository, or use "Code" > "Download ZIP" on GitHub and extract it anywhere:
+
+```bash
+git clone https://github.com/AymerickVic/m365-license-onedrive-waste-finder.git
+cd m365-license-onedrive-waste-finder
+```
 
 ## 2. Install the Microsoft Graph modules (one time)
 
@@ -27,13 +32,13 @@ If you skip this, the launcher offers to do it for you on first run.
 
 Open `Config\Config.ps1` and replace the values in `LicensePriceTable` with your
 own contracted monthly licence prices. A licence that is not listed is counted as
-0 EUR and reported with a warning — the audit never fails on it.
+0 EUR and reported with a warning. The audit never fails on it.
 
 ## 4. Run the audit
 
-**Windows** — double-click **`Run-Audit.cmd`**.
+**Windows**: double-click **`Run-Audit.cmd`**.
 
-**macOS / Linux** — from a terminal in the folder:
+**macOS / Linux**: from a terminal in the folder:
 
 ```bash
 pwsh ./Run-Audit.ps1
@@ -53,14 +58,14 @@ pwsh ./Run-Audit.ps1 -TenantId "contoso.onmicrosoft.com"
 
 Open the newest file in the `Reports` folder:
 
-- `WasteReport-<timestamp>.html` — the report to show management.
-- `WasteReport-<timestamp>.csv` — the raw detail for your own analysis.
+- `WasteReport-<timestamp>.html`: the report to show management.
+- `WasteReport-<timestamp>.csv`: the raw detail for your own analysis.
 
 ---
 
 ## If a script looks "blocked" on Windows
 
-Prefer `Run-Audit.cmd` — it bypasses the block automatically. If you would rather
+Prefer `Run-Audit.cmd`. It bypasses the block automatically. If you would rather
 run the `.ps1` files directly and Windows refuses with *"running scripts is
 disabled on this system"*, start PowerShell 7 with the execution policy bypassed
 for that session only:

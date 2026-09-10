@@ -3,14 +3,14 @@
 All notable changes to License & OneDrive Waste Finder are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
-## 1.0.1 — Added Graph session cleanup (Disconnect-MgGraph) on script exit, per Microsoft best practices
+## 1.0.1: Added Graph session cleanup (Disconnect-MgGraph) on script exit, per Microsoft best practices
 
 - The audit now closes the Microsoft Graph session at the end of every run, via a
   `finally` block, so the authentication context is cleared whether the run
   succeeds or fails. Added the `Disconnect-AuditGraph` helper, which is safe to
   call when no session is open.
 
-## 1.0.0 — Initial release
+## 1.0.0: Initial release
 
 - Read-only Microsoft 365 audit that quantifies, in euros, the licences still
   assigned to disabled accounts, and flags orphaned OneDrive drives (an active
