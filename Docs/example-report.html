@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microsoft 365 Licence &amp; OneDrive Waste Report</title>
+<style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f5f7; color: #1f2933;
+           font-family: Segoe UI, -apple-system, Helvetica, Arial, sans-serif; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }
+    header h1 { margin: 0 0 4px; font-size: 24px; }
+    header .sub { color: #6b7280; font-size: 13px; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 28px 0 8px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .card .label { color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    .card .value { font-size: 26px; font-weight: 700; margin-top: 6px; }
+    .card.accent .value { color: #b91c1c; }
+    .card.warn   .value { color: #b45309; }
+    @media (max-width: 820px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 24px;
+            border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; font-size: 13px; }
+    thead th { text-align: left; background: #1f2937; color: #f9fafb; padding: 11px 12px;
+               font-weight: 600; white-space: nowrap; }
+    tbody td { padding: 10px 12px; border-top: 1px solid #eef0f2; vertical-align: top; }
+    tbody tr:hover { background: #fafbfc; }
+    tr.orphan { background: #fef2f2; }
+    tr.orphan:hover { background: #fee2e2; }
+    td.num, th.num { text-align: right; white-space: nowrap; }
+    .muted { color: #9099a3; font-size: 12px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-risk { background: #fee2e2; color: #b91c1c; }
+    .badge-ok   { background: #dcfce7; color: #15803d; }
+    footer { margin-top: 28px; color: #9099a3; font-size: 12px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <h1>Microsoft 365 Licence &amp; OneDrive Waste Report</h1>
+        <div class="sub">Read-only audit &middot; Tenant contoso.onmicrosoft.com &middot; Generated 2026-09-10 09:42</div>
+    </header>
+
+    <section class="cards">
+        <div class="card accent">
+            <div class="label">Wasted per month</div>
+            <div class="value">322,30 EUR</div>
+        </div>
+        <div class="card accent">
+            <div class="label">Wasted per year</div>
+            <div class="value">3 867,60 EUR</div>
+        </div>
+        <div class="card">
+            <div class="label">Disabled licensed accounts</div>
+            <div class="value">11</div>
+        </div>
+        <div class="card warn">
+            <div class="label">Orphaned OneDrive drives</div>
+            <div class="value">5</div>
+        </div>
+    </section>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Account</th>
+                <th>Licences</th>
+                <th class="num">Cost / month</th>
+                <th class="num">Cost / year</th>
+                <th class="num">OneDrive used</th>
+                <th>OneDrive access</th>
+                <th>Manager</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr class="orphan"><td>Julie Martin<div class='muted'>j.martin@contoso.com</div></td><td>SPE_E3</td><td class='num'>36,00 EUR</td><td class='num'>432,00 EUR</td><td class='num'>14,32 GB</td><td><span class="badge badge-risk">orphaned - no manager access</span></td><td></td><td class='muted'>Orphaned: no manager assigned and drive still active.</td></tr><tr><td>Thomas Bernard<div class='muted'>t.bernard@contoso.com</div></td><td>ENTERPRISEPACK</td><td class='num'>23,00 EUR</td><td class='num'>276,00 EUR</td><td class='num'>3,87 GB</td><td><span class="badge badge-ok">manager has access</span></td><td>Claire Dubois &lt;c.dubois@contoso.com&gt;</td><td class='muted'></td></tr><tr class="orphan"><td>Sophie Petit<div class='muted'>s.petit@contoso.com</div></td><td>SPE_E5</td><td class='num'>57,00 EUR</td><td class='num'>684,00 EUR</td><td class='num'>41,05 GB</td><td><span class="badge badge-risk">orphaned - no manager access</span></td><td>Marc Lefevre &lt;m.lefevre@contoso.com&gt;</td><td class='muted'>Orphaned: manager has no permission on the drive root.</td></tr><tr><td>Lucas Moreau<div class='muted'>l.moreau@contoso.com</div></td><td>SPB</td><td class='num'>22,00 EUR</td><td class='num'>264,00 EUR</td><td class='num'><span class="muted">no OneDrive</span></td><td><span class="muted">-</span></td><td></td><td class='muted'>No OneDrive provisioned for this account.</td></tr><tr class="orphan"><td>Emma Roux<div class='muted'>e.roux@contoso.com</div></td><td>ENTERPRISEPACK, EMS</td><td class='num'>33,60 EUR</td><td class='num'>403,20 EUR</td><td class='num'>7,50 GB</td><td><span class="badge badge-risk">orphaned - no manager access</span></td><td>Claire Dubois &lt;c.dubois@contoso.com&gt;</td><td class='muted'>Orphaned: manager has no permission on the drive root.</td></tr><tr><td>Hugo Garcia<div class='muted'>h.garcia@contoso.com</div></td><td>SPE_E3</td><td class='num'>36,00 EUR</td><td class='num'>432,00 EUR</td><td class='num'>0,92 GB</td><td><span class="badge badge-ok">manager has access</span></td><td>Nadia Fontaine &lt;n.fontaine@contoso.com&gt;</td><td class='muted'></td></tr><tr><td>Lea Fournier<div class='muted'>l.fournier@contoso.com</div></td><td>O365_BUSINESS_PREMIUM</td><td class='num'>12,90 EUR</td><td class='num'>154,80 EUR</td><td class='num'><span class="muted">no OneDrive</span></td><td><span class="muted">-</span></td><td>Marc Lefevre &lt;m.lefevre@contoso.com&gt;</td><td class='muted'>No OneDrive provisioned for this account.</td></tr><tr class="orphan"><td>Nathan Girard<div class='muted'>n.girard@contoso.com</div></td><td>ENTERPRISEPACK</td><td class='num'>23,00 EUR</td><td class='num'>276,00 EUR</td><td class='num'>22,18 GB</td><td><span class="badge badge-risk">orphaned - no manager access</span></td><td></td><td class='muted'>Orphaned: no manager assigned and drive still active.</td></tr><tr><td>Chloe Lambert<div class='muted'>c.lambert@contoso.com</div></td><td>SPE_E3, AAD_PREMIUM_P2</td><td class='num'>45,20 EUR</td><td class='num'>542,40 EUR</td><td class='num'>5,60 GB</td><td><span class="badge badge-ok">manager has access</span></td><td>Marc Lefevre &lt;m.lefevre@contoso.com&gt;</td><td class='muted'></td></tr><tr class="orphan"><td>Antoine Bonnet<div class='muted'>a.bonnet@contoso.com</div></td><td>ENTERPRISEPACK</td><td class='num'>23,00 EUR</td><td class='num'>276,00 EUR</td><td class='num'>1,30 GB</td><td><span class="badge badge-risk">orphaned - no manager access</span></td><td>Nadia Fontaine &lt;n.fontaine@contoso.com&gt;</td><td class='muted'>Orphaned: manager has no permission on the drive root.</td></tr><tr><td>Legacy Scan Service<div class='muted'>svc-legacy-scan@contoso.com</div></td><td>EMS</td><td class='num'>10,60 EUR</td><td class='num'>127,20 EUR</td><td class='num'><span class="muted">no OneDrive</span></td><td><span class="muted">-</span></td><td></td><td class='muted'>No OneDrive provisioned for this account.</td></tr>
+        </tbody>
+    </table>
+
+    <footer>
+        Euro figures use the indicative prices in Config.ps1 and must be adjusted to your
+        contracted rates. &quot;Orphaned&quot; means the disabled account still owns an active
+        OneDrive whose root has no permission granted to the account's manager. This report is
+        read-only: no account, licence or drive was modified.
+    </footer>
+</div>
+</body>
+</html>

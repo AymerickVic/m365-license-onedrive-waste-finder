@@ -1,0 +1,14 @@
+# Audit output (contains tenant data, never commit)
+Logs/*
+!Logs/.gitkeep
+Reports/*
+!Reports/.gitkeep
+*.log
+*.csv
+
+# Generated HTML reports (the demo report under docs/ is tracked explicitly)
+WasteReport-*.html
+
+# macOS
+.DS_Store
+__MACOSX/
