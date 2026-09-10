@@ -2,13 +2,13 @@
 
 A read-only PowerShell audit for Microsoft 365 that puts a euro figure on the licences still assigned to disabled accounts, and reports the state of each of those accounts' OneDrive: orphaned, delegated to the manager, not provisioned, or not accessible to the administrator running the audit. The licence figures work on any tenant. The OneDrive inspection depends on the access that administrator holds on each drive, and the report says so explicitly whenever it could not look (see [Known limitations](#known-limitations)). Microsoft Graph SDK only, no deprecated modules, no on-premises Active Directory.
 
-![Example HTML report: summary cards showing wasted cost per month and per year, the number of disabled licensed accounts and orphaned OneDrive drives, followed by a per-account table with licences, cost, OneDrive usage, access status, manager and notes](Docs/example-report.png)
+![Example HTML report: a warning box stating that the OneDrive audit is incomplete for two accounts, summary cards showing wasted cost per month and per year, the number of disabled licensed accounts, orphaned OneDrive drives and drives not accessible, followed by a per-account table with licences, cost, OneDrive usage, access status, manager and notes](Docs/example-report.png)
 
 The report above was generated from fictional data (contoso.com). Open [Docs/example-report.html](Docs/example-report.html) to see the actual file the script produces.
 
 ## The problem
 
-When an employee leaves, the account is usually disabled but the licence is frequently left in place, and Microsoft keeps billing for it. The Microsoft 365 admin center has no native report that crosses "account disabled" with "licence assigned", so these seats accumulate silently, often for months. The same goes for OneDrive: the disabled user's drive stays online with its sharing links active, and when the licence is finally removed the data is deleted after the retention period, at which point nobody may hold access to recover it. This script gives you both views in one run, with a management-ready HTML report and a CSV for your own analysis.
+When an employee leaves, the account is usually disabled but the licence is frequently left in place, and Microsoft keeps billing for it. The Microsoft 365 admin center has no native report that crosses "account disabled" with "licence assigned", so these seats accumulate silently, often for months. The same goes for OneDrive: the disabled user's drive stays online with its sharing links active, and when the licence is finally removed the data is deleted after the retention period, at which point nobody may hold access to recover it. This script gives you the licence view on any tenant, and the OneDrive view for every drive the auditing administrator can reach, in one run, with a management-ready HTML report and a CSV for your own analysis.
 
 ## What the script does
 
