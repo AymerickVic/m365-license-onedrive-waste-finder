@@ -27,6 +27,10 @@ This project follows [Semantic Versioning](https://semver.org/).
   Business Premium licence (delegated administrators are refused access to other
   users' OneDrive by default); example report regenerated with the four statuses;
   quick start adapted to a git clone; wording clean-up.
+- GitHub repository only: `Module/M365WasteFinder` wraps the audit as a PowerShell
+  module exposing a single `Invoke-WasteAudit` function, for publication on the
+  PowerShell Gallery. The wrapper runs the existing `Scripts/Invoke-WasteAudit.ps1`
+  unchanged; no audit code was moved or duplicated.
 
 ## 1.0.1: Added Graph session cleanup (Disconnect-MgGraph) on script exit, per Microsoft best practices
 

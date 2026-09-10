@@ -57,6 +57,8 @@ git clone https://github.com/AymerickVic/m365-license-onedrive-waste-finder.git
 cd m365-license-onedrive-waste-finder
 ```
 
+The module will also be published on the PowerShell Gallery as `M365WasteFinder`. Once it is live, `Install-Module M365WasteFinder -Scope CurrentUser` followed by `Invoke-WasteAudit` will replace the clone and pull the four required Microsoft.Graph modules automatically. Until then, use the clone.
+
 Install the Graph modules. The simplest way is the meta-module, which pulls a consistent set of every sub-module:
 
 ```powershell
