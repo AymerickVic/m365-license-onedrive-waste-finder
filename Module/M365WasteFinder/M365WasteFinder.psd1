@@ -1,6 +1,6 @@
 @{
     RootModule           = 'M365WasteFinder.psm1'
-    ModuleVersion        = '1.0.2'
+    ModuleVersion        = '1.0.3'
     GUID                 = '822961fa-e6bc-4134-8240-fb02baf04786'
     Author               = 'Aymerick Victoire'
     CompanyName          = 'Aymerick Victoire'

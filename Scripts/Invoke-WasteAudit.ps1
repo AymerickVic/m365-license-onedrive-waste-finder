@@ -57,6 +57,15 @@
     authenticate. Use this on Windows when the account broker keeps selecting the
     wrong account or forces a passkey you cannot complete.
 
+.PARAMETER ReportPath
+    Optional. Folder that receives the HTML report and the CSV export(s). When
+    omitted, Config.ReportPath is used (the product's Reports folder), exactly as
+    before this parameter existed. The folder is created if missing.
+
+.PARAMETER LogPath
+    Optional. Folder that receives the run log. When omitted, Config.LogPath is
+    used (the product's Logs folder). The folder is created if missing.
+
 .EXAMPLE
     ./Invoke-WasteAudit.ps1
 
@@ -87,7 +96,13 @@ param(
     [switch]$IncludeInactiveEnabled,
 
     [Parameter()]
-    [switch]$UseDeviceCode
+    [switch]$UseDeviceCode,
+
+    [Parameter()]
+    [string]$ReportPath,
+
+    [Parameter()]
+    [string]$LogPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -97,6 +112,11 @@ $ErrorActionPreference = 'Stop'
 # ---------------------------------------------------------------------------
 . (Join-Path -Path $PSScriptRoot -ChildPath '..' -AdditionalChildPath 'Config', 'Config.ps1')
 . (Join-Path -Path $PSScriptRoot -ChildPath '..' -AdditionalChildPath 'Modules', 'Functions.ps1')
+
+# An explicit -ReportPath / -LogPath wins over Config.ps1. When neither is given,
+# the configured folders are used and nothing changes from earlier versions.
+if (-not [string]::IsNullOrWhiteSpace($ReportPath)) { $Config.ReportPath = $ReportPath }
+if (-not [string]::IsNullOrWhiteSpace($LogPath))    { $Config.LogPath    = $LogPath }
 
 # ---------------------------------------------------------------------------
 #  Start the log for this run.

@@ -122,7 +122,7 @@ A Microsoft sign-in window opens on the first run. Authenticate with an administ
 
 ### Parameters
 
-All three parameters are accepted by both `Run-Audit.ps1` and `Scripts/Invoke-WasteAudit.ps1` and are optional.
+All five parameters are accepted by `Run-Audit.ps1`, `Scripts/Invoke-WasteAudit.ps1` and the module's `Invoke-WasteAudit`, and are optional.
 
 `-TenantId <tenant>` signs in to a specific tenant, given as a domain (`contoso.onmicrosoft.com`) or the tenant GUID. It overrides `TenantId` in `Config.ps1`. Use it when your account can reach several tenants, or when the account is a personal Microsoft account that administers an organisation tenant. The script refuses to continue when the token targets the personal "consumers" tenant, because there is no directory to audit there.
 
@@ -142,9 +142,15 @@ All three parameters are accepted by both `Run-Audit.ps1` and `Scripts/Invoke-Wa
 ./Scripts/Invoke-WasteAudit.ps1 -UseDeviceCode
 ```
 
+`-ReportPath <folder>` and `-LogPath <folder>` choose where the HTML report and CSV export, and the run log, are written. When omitted, the product's `Reports` and `Logs` folders are used, as in earlier versions. Folders are created if missing. Through the PowerShell module, when neither is given and the module folder is not writable (an installation for all users), the outputs are redirected to a `M365WasteFinder` folder in your documents, and the redirection is announced on the console before the audit starts. The console summary always prints the folders actually used.
+
+```powershell
+./Scripts/Invoke-WasteAudit.ps1 -ReportPath 'C:\Audits\M365' -LogPath 'C:\Audits\M365\Logs'
+```
+
 ### Output
 
-Everything is timestamped and written under `Reports/` and `Logs/` (both ignored by git):
+Everything is timestamped and written under `Reports/` and `Logs/` by default (both ignored by git), or under `-ReportPath` / `-LogPath` when given:
 
 | File | Content |
 |------|---------|

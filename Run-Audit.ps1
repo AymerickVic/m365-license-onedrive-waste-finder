@@ -12,7 +12,8 @@
          start it from.
       2. Checks the required Microsoft Graph modules and offers to install them
          if they are missing.
-      3. Launches the audit, passing through -TenantId and -IncludeInactiveEnabled.
+      3. Launches the audit, passing through -TenantId, -IncludeInactiveEnabled,
+         -UseDeviceCode, -ReportPath and -LogPath.
 
     On Windows, the simplest way to run it is to double-click Run-Audit.cmd, which
     calls this script with PowerShell 7 and the execution policy bypassed for that
@@ -34,6 +35,14 @@
     Optional. Sign in with the device-code flow (a code + URL you open in any
     browser) instead of the Windows account broker. Use it when Windows keeps
     selecting the wrong account or forces a passkey. Passed through to the audit.
+
+.PARAMETER ReportPath
+    Optional. Folder for the HTML report and CSV export(s). Defaults to the
+    product's Reports folder. Passed through to the audit.
+
+.PARAMETER LogPath
+    Optional. Folder for the run log. Defaults to the product's Logs folder.
+    Passed through to the audit.
 #>
 
 [CmdletBinding()]
@@ -45,7 +54,13 @@ param(
     [switch]$IncludeInactiveEnabled,
 
     [Parameter()]
-    [switch]$UseDeviceCode
+    [switch]$UseDeviceCode,
+
+    [Parameter()]
+    [string]$ReportPath,
+
+    [Parameter()]
+    [string]$LogPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -85,5 +100,7 @@ $forward = @{}
 if (-not [string]::IsNullOrWhiteSpace($TenantId)) { $forward['TenantId'] = $TenantId }
 if ($IncludeInactiveEnabled) { $forward['IncludeInactiveEnabled'] = $true }
 if ($UseDeviceCode) { $forward['UseDeviceCode'] = $true }
+if (-not [string]::IsNullOrWhiteSpace($ReportPath)) { $forward['ReportPath'] = $ReportPath }
+if (-not [string]::IsNullOrWhiteSpace($LogPath)) { $forward['LogPath'] = $LogPath }
 
 & $auditScript @forward

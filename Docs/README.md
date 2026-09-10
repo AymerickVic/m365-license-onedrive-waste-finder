@@ -172,6 +172,15 @@ carries the required scopes.
   ./Scripts/Invoke-WasteAudit.ps1 -UseDeviceCode
   ```
 
+- **`-ReportPath <folder>`** and **`-LogPath <folder>`**: where the HTML report and
+  CSV export, and the run log, are written. When omitted, the `Reports` and `Logs`
+  folders configured in `Config.ps1` are used, exactly as before. Folders are created
+  if missing. The console summary always prints the folders actually used.
+
+  ```powershell
+  ./Scripts/Invoke-WasteAudit.ps1 -ReportPath 'C:\Audits\M365' -LogPath 'C:\Audits\M365\Logs'
+  ```
+
 ---
 
 ## Output

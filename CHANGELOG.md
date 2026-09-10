@@ -3,6 +3,20 @@
 All notable changes to License & OneDrive Waste Finder are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## 1.0.3: Output folders can be chosen with -ReportPath and -LogPath
+
+- `Scripts/Invoke-WasteAudit.ps1` and `Run-Audit.ps1` accept two optional parameters,
+  `-ReportPath` and `-LogPath`, which override the `ReportPath` and `LogPath` values of
+  `Config.ps1` when supplied. Without them nothing changes: the product's `Reports`
+  and `Logs` folders are used as before.
+- The PowerShell module (`M365WasteFinder`, GitHub repository only) exposes the same
+  two parameters. When neither is given and the module folder is not writable (an
+  installation for all users), the outputs are redirected to a `M365WasteFinder`
+  folder in the user's documents, and the redirection is announced on the console
+  before the audit starts. The console summary always names the folders actually
+  used.
+- Audit logic, Graph scopes, pricing and report content are unchanged.
+
 ## 1.0.2: Explicit OneDrive status, no silent false negative on inaccessible drives
 
 - The single `OneDriveOrphaned` boolean is replaced by an `OneDriveStatus` column
