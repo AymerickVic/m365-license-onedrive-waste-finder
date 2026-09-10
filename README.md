@@ -192,7 +192,7 @@ PSScriptAnalyzerSettings.psd1   Lint settings used during development
 
 ## Automating the rest of the offboarding
 
-This audit tells you what is being wasted. It deliberately changes nothing. A separate, paid pack automates the seven steps of a complete user departure: account disabling, licence and group removal, MFA method revocation, Intune device retirement, OneDrive delegation to the manager, mailbox conversion to shared, and an orchestrator that runs them in order. Details at {{LIEN_BLINK_GITHUB}}.
+This audit tells you what is being wasted. It deliberately changes nothing. A separate, paid pack automates the seven steps of a complete user departure: account disabling, licence and group removal, MFA method revocation, Intune device retirement, OneDrive delegation to the manager, mailbox conversion to shared, and an orchestrator that runs them in order. Details at https://edensys.blink.store/m365-license-onedrive-waste-finder?checkout=github-waste-finder.
 
 ## License
 

@@ -77,6 +77,25 @@ account and continues without stopping.
 
 ---
 
+### The report says some drives are not accessible. What does it mean?
+
+The auditing account was refused access to those accounts' OneDrive (Microsoft
+Graph answered `accessDenied`). With delegated `Files.Read.All`, an administrator
+has no access to another user's OneDrive unless they are a site collection
+administrator of that personal site, which is the default state of a tenant. The
+audit therefore could not tell whether the drive is orphaned. Such accounts get the
+status `NotAccessible`, are listed as "not accessible" in the report, and are *not*
+included in the orphaned figure. Do not read a low orphaned count as a clean tenant
+while the "OneDrive audit incomplete" warning is present.
+
+To complete the audit, grant the auditing account access to each affected OneDrive,
+then run the audit again: in the Microsoft 365 admin center open **Users** >
+**Active users**, select the user, open the **OneDrive** tab and choose **Get access
+to files**; or add the auditing account as site collection administrator of the
+OneDrive with the SharePoint admin tools.
+
+---
+
 ### What is the difference between a "wasted" licence and an "inactive" account?
 
 - **Wasted licence**: the audit's core purpose. An account is **disabled**
